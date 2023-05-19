@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        #game-board {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            border: 1px solid black;
+            margin: 0 auto;
+        }
+        .snake-segment {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: green;
+        }
+        #food {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-board">
+    </div>
+
+    <script>
+        // Initialize variables
+        var gameBoard = document.getElementById('game-board');
+        var snakeSegments = [];
+        var food = null;
+        var direction = 'right';
+        var gameInterval;
+
+        // Function to start the game
+        function startGame() {
+            // Create snake head
+            var snakeHead = createSegment(0, 0);
+            snakeSegments.push(snakeHead);
+            gameBoard.appendChild(snakeHead);
+
+            // Create initial food
+            createFood();
+
+            // Start game interval
+            gameInterval = setInterval(moveSnake, 200);
+        }
+
+        // Function to create a snake segment
+        function createSegment(x, y) {
+            var segment = document.createElement('div');
+            segment.className = 'snake-segment';
+            segment.style.left = x + 'px';
+            segment.style.top = y + 'px';
+            return segment;
+        }
+
+        // Function to create food at a random position
+        function createFood() {
+            var x = Math.floor(Math.random() * (gameBoard.offsetWidth / 20)) * 20;
+            var y = Math.floor(Math.random() * (gameBoard.offsetHeight / 20)) * 20;
+
+            food = document.createElement('div');
+            food.id = 'food';
+            food.style.left = x + 'px';
+            food.style.top = y + 'px';
+
+            gameBoard.appendChild(food);
+        }
+
+        // Function to move the snake
+        function moveSnake() {
+            var head = snakeSegments[0];
+            var x = parseInt(head.style.left);
+            var y = parseInt(head.style.top);
+
+            switch (direction) {
+                case 'up':
+                    y -= 20;
+                    break;
+                case 'down':
+                    y += 20;
+                    break;
+                case 'left':
+                    x -= 20;
+                    break;
+                case 'right':
+                    x += 20;
+                    break;
+            }
+
+            // Check for collision with walls
+            if (x < 0 || x >= gameBoard.offsetWidth || y < 0 || y >= gameBoard.offsetHeight) {
+                gameOver();
+                return;
+            }
+
+            // Check for collision with self
+            for (var i = 1; i < snakeSegments.length; i++) {
+                if (x === parseInt(snakeSegments[i].style.left) && y === parseInt(snakeSegments[i].style.top)) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Check for collision with food
+            if (x === parseInt(food.style.left) && y === parseInt(food.style.top)) {
+                // Remove old food
+                gameBoard.removeChild(food);
+
+                // Create new segment and add to snake
+                var newSegment = createSegment(x, y);
+                snakeSegments.unshift(newSegment);
+                gameBoard.appendChild(newSegment);
+
+                // Create new food
+                createFood();
+            } else {
+                // Remove tail segment
+                var tail = snakeSegments.pop();
+                gameBoard.removeChild(tail);
+
+                // Create new segment and add to snake
+                var newSegment = createSegment(x, y);
+                snakeSegments.unshift(newSegment);
+                gameBoard.appendChild(newSegment);
+            }
+        }
+
+        // Function to handle game over
+        function gameOver() {
+            clearInterval(gameInterval);
+            alert('Game Over');
+        }
+
+        // Function to handle key presses
+        function handleKeyPress(event) {
+            switch (event.keyCode) {
+                case 37: // Left arrow key
+                    direction = 'left';
+                    break;
+                case 38: // Up arrow key
+                    direction = 'up';
+                    break;
+                case 39: // Right arrow key
+                    direction = 'right';
+                    break;
+                case 40: // Down arrow key
+                    direction = 'down';
+                    break;
+            }
+        }
+
+        // Bind key press event handler
+        document.addEventListener('keydown', handleKeyPress);
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>
